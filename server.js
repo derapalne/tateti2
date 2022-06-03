@@ -5,7 +5,7 @@ import { Server as IOServer } from "socket.io";
 const app = express();
 const httpServer = new HttpServer(app);
 const io = new IOServer(httpServer);
-const PORT = 8080;
+const PORT = process.env.PORT || 4141;
 
 // MEMORIA IDS
 let idsActivas = [];
