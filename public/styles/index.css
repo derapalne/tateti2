@@ -1,0 +1,87 @@
+* {
+    margin: auto;
+    padding-bottom: 0px;
+}
+
+body {
+    background-color: #e2deca;
+    font-family: cursive;
+}
+
+table {
+    border-style: hidden;
+    border-collapse: collapse;
+}
+
+a {
+    text-decoration: wavy;
+}
+
+a:link {
+    color: black;
+}
+
+a:visited {
+    color: black;
+}
+
+#nav {
+    margin: auto 25%;
+}
+
+#tatetiMayor td {
+    border: solid 3px #a8a596;
+    padding: 7px;
+}
+
+#titulo {
+    min-width: 300px;
+    margin: 30px 25%;
+}
+
+.celula {
+    min-width: 32px;
+    min-height: 32px;
+    image-resolution: 32px;
+    image-rendering: pixelated;
+}
+
+.invisible {
+    display: none;
+}
+
+.tateti td {
+    border: solid 2px #a8a596;
+}
+
+.actual {
+    background-color: #b3e0e2;
+}
+
+.puntox {
+    background-image: url("../images/cross-win.png");
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+}
+
+.puntoo {
+    background-image: url("../images/circle-win.png");
+    image-resolution: 128px;
+    image-rendering: pixelated;
+}
+
+.ganadorx {
+    background-color: #ff7f61;
+}
+
+.ganadoro {
+    background-color: #9a9aff;
+}
+
+.turnox {
+    color: #ff4f26;
+}
+
+.turnoo {
+    color: #77f;
+}

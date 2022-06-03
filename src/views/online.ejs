@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/socket.io/socket.io.js"></script>
+  <link href="/styles/index.css" rel="stylesheet">
+  <title>TaTeTi²</title>
+</head>
+
+<body>
+
+  <div id="titulo">
+    <h1>TaTeTi²</h1>
+
+    <p id="texto">- - - - - - - - - - -</p>
+    <div id="buscadorPartida">
+        <div id="divGenerarPartida">
+            <p>Si querés comenzar una nueva partida poné tu nombre:</p>
+            <input type="text" id="idPartidaNombre" placeholder="Tu nombre acá" />
+            <button id="generate">Generar partida</button>
+            <small id="idPartidaGenerada"></small><br />
+            <small id="esperandoContrincante" class="invisible">Esperando contrincante...</small>
+        </div>
+        <div id="divBuscarPartida">
+            <p>O si ya generaron una y querés sumarte: </p>
+            <select id="partidasActuales">
+              <% idsActivas.forEach((id) => { %>
+                <option onclick="elegirPartida('<%=id.id%>')"><%=id.id%></option>
+              <% }) %>
+            </select>
+            <input type="text" id="nombreJugador" placeholder="Tu nombre acá"/>
+            <button id="okId">OK</button><br />
+        </div>
+        <div id="divPartidaElegida">
+            <small id="partidaElegida"></small>
+            <button id="leave">ABANDONAR</button>
+        </div>
+        <br />
+    </div>
+  </div>
+
+  <div id="pantallaJuego" class="invisible">
+      <p id="contadorTurnos" style="margin: auto 25%" class="turnoo"></p>
+    <table id="tatetiMayor">
+      <tr>
+        <td>
+          <table class="tateti" id="tateti0">
+            <tr>
+              <td class="casilla"><img class="celula" id="celula00" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula01" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula02" src="/images/blank.png"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula03" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula04" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula05" src="/images/blank.png"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula06" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula07" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula08" src="/images/blank.png"></td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table class="tateti" id="tateti1">
+            <tr>
+              <td class="casilla"><img class="celula" id="celula10" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula11" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula12" src="/images/blank.png"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula13" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula14" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula15" src="/images/blank.png"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula16" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula17" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula18" src="/images/blank.png"></td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table class="tateti" id="tateti2">
+            <tr>
+              <td class="casilla"><img class="celula" id="celula20" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula21" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula22" src="/images/blank.png"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula23" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula24" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula25" src="/images/blank.png"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula26" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula27" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula28" src="/images/blank.png"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <table class="tateti" id="tateti3">
+            <tr>
+              <td class="casilla"><img class="celula" id="celula30" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula31" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula32" src="/images/blank.png"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula33" src="/images/blank.png""></td>
+                  <td class=" casilla"><img class="celula" id="celula34" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula35" src="/images/blank.png"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula36" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula37" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula38" src="/images/blank.png"></td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table class="tateti" id="tateti4">
+            <tr>
+              <td class="casilla"><img class="celula" id="celula40" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula41" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula42" src="/images/blank.png"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula43" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula44" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula45" src="/images/blank.png"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula46" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula47" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula48" src="/images/blank.png"></td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table class="tateti" id="tateti5">
+            <tr>
+              <td class="casilla"><img class="celula" id="celula50" src="/images/blank.png"></td>
+              <td class="casilla"><img class="celula" id="celula51"></td>
+              <td class="casilla"><img class="celula" id="celula52"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula53"></td>
+              <td class="casilla"><img class="celula" id="celula54"></td>
+              <td class="casilla"><img class="celula" id="celula55"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula56"></td>
+              <td class="casilla"><img class="celula" id="celula57"></td>
+              <td class="casilla"><img class="celula" id="celula58"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <table class="tateti" id="tateti6">
+            <tr>
+              <td class="casilla"><img class="celula" id="celula60"></td>
+              <td class="casilla"><img class="celula" id="celula61"></td>
+              <td class="casilla"><img class="celula" id="celula62"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula63"></td>
+              <td class="casilla"><img class="celula" id="celula64"></td>
+              <td class="casilla"><img class="celula" id="celula65"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula66"></td>
+              <td class="casilla"><img class="celula" id="celula67"></td>
+              <td class="casilla"><img class="celula" id="celula68"></td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table class="tateti" id="tateti7">
+            <tr>
+              <td class="casilla"><img class="celula" id="celula70"></td>
+              <td class="casilla"><img class="celula" id="celula71"></td>
+              <td class="casilla"><img class="celula" id="celula72"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula73"></td>
+              <td class="casilla"><img class="celula" id="celula74"></td>
+              <td class="casilla"><img class="celula" id="celula75"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula76"></td>
+              <td class="casilla"><img class="celula" id="celula77"></td>
+              <td class="casilla"><img class="celula" id="celula78"></td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table class="tateti" id="tateti8">
+            <tr>
+              <td class="casilla"><img class="celula" id="celula80"></td>
+              <td class="casilla"><img class="celula" id="celula81"></td>
+              <td class="casilla"><img class="celula" id="celula82"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula83"></td>
+              <td class="casilla"><img class="celula" id="celula84"></td>
+              <td class="casilla"><img class="celula" id="celula85"></td>
+            </tr>
+            <tr>
+              <td class="casilla"><img class="celula" id="celula86"></td>
+              <td class="casilla"><img class="celula" id="celula87"></td>
+              <td class="casilla"><img class="celula" id="celula88"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+
+  <br />
+  <br />
+  <br />
+  <div id="nav">
+    <a href="/">Menú principal</a>
+  </div>
+
+  <script src="./online.js"></script>
+</body>
+
+</html>
