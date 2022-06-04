@@ -39,6 +39,10 @@ a:visited {
     margin: 30px 25%;
 }
 
+#instrucciones {
+    margin: auto 23%;
+}
+
 .celula {
     min-width: 32px;
     min-height: 32px;

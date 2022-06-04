@@ -60,8 +60,8 @@ io.on("connection", (socket) => {
     });
     socket.on("jugadaRealizada", (data) => {
         io.sockets.emit("jugadaRealizada", data);
-    })
+    });
     socket.on("victoria", (data) => {
-        io.sockets.emit("victoria", (data));
-    })
+        io.sockets.emit("victoria", data);
+    });
 });

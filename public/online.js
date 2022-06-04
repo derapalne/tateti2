@@ -36,7 +36,11 @@ const sonidos = {
     start: new Audio("/audio/start.mp3"),
     loss: new Audio("/audio/loss.mp3"),
     win: new Audio("/audio/win.mp3"),
-}
+    moveGood: new Audio("/audio/move-good.mp3"),
+    moveBad: new Audio("/audio/move-bad.mp3"),
+    pointGood: new Audio("/audio/point-good.mp3"),
+    pointBad: new Audio("/audio/point-bad.mp3"),
+};
 
 // ---- LOGICA DE PARTIDAS ---- //
 
@@ -160,20 +164,22 @@ socket.on("jugadaRealizada", (data) => {
 });
 
 // BOTH
-socket.on("victoria", (data)=> {
-    if(estaJugando && data.id == idPartidaActual) {
+socket.on("victoria", (data) => {
+    if (estaJugando && data.id == idPartidaActual) {
         estaJugando = false;
-        if(data.jugador == player) {
+        if (data.jugador == player) {
             contadorTurnos.innerText = "Ganaste!";
+            document.getElementById(`tateti${data.numeroCelula[0]}`).classList.remove("actual");
             sonidos.win.play();
         } else {
             contadorTurnos.innerText = "Perdiste!";
-            iniciarJugada();
+            iniciarJugada(data.numeroCelula);
             deshabilitarTodo();
+            document.getElementById(`tateti${data.numeroCelula[0]}`).classList.remove("actual");
             sonidos.loss.play();
         }
     }
-})
+});
 
 // LOGICA DE JUEGO
 
@@ -218,7 +224,8 @@ const chequear = (tateti) => {
     return win;
 };
 
-const chequearGlobal = () => {
+const chequearGlobal = (numeroCelula) => {
+    let victoriaAhora = false;
     jg.forEach((j) => {
         if (
             logica[j[0]].jugador == player &&
@@ -226,12 +233,21 @@ const chequearGlobal = () => {
             logica[j[2]].jugador == player
         ) {
             victoria();
+            victoriaAhora = true;
             for (let n = 0; n < 3; n++) {
                 document.getElementById(`tateti${j[n]}`).classList.add(`ganador${player}`);
-                socket.emit("victoria", { jugador: player, id: idPartidaActual });
             }
+            deshabilitarTodo();
+            socket.emit("victoria", {
+                jugador: player,
+                id: idPartidaActual,
+                numeroCelula: numeroCelula,
+            });
         }
     });
+    if(!victoriaAhora) {
+        sonidos.pointGood.play();
+    }
 };
 
 const estaLleno = (tateti) => {
@@ -254,6 +270,9 @@ const iniciarJugada = (numeroCelula, punto) => {
     celulaJugada.setAttribute("src", contrincante == "x" ? "/images/cross.png" : "/images/circle.png");
     if (punto) {
         document.getElementById(`tateti${numeroCelula[0]}`).classList.add(`punto${contrincante}`);
+        sonidos.pointBad.play();
+    } else {
+        sonidos.moveBad.play();
     }
     // Jugada actual
     if (estaLleno(logica[numeroCelula[1]].mini)) {
@@ -306,8 +325,10 @@ const jugada = (numeroCelula) => {
         logica[numeroCelula[0]].jugador = player;
         logica[numeroCelula[0]].estado = true;
         punto = true;
-        chequearGlobal();
+        chequearGlobal(numeroCelula);
         document.getElementById(`tateti${numeroCelula[0]}`).classList.add(`punto${player}`);
+    } else {
+        sonidos.moveGood.play();
     }
     socket.emit("jugadaRealizada", {
         numeroCelula: numeroCelula,
@@ -322,11 +343,14 @@ const jugada = (numeroCelula) => {
     document.getElementById(`tateti${numeroCelula[1]}`).classList.add("actual");
     contadorTurnos.innerText = "Turno de tu oponente";
     const contrincante = player == "x" ? "o" : "x";
-    contadorTurnos.classList.remove("turno" + contrincante);
+    contadorTurnos.classList.remove("turno" + player);
     contadorTurnos.classList.add("turno" + contrincante);
 };
 
 const primeraJugada = (numeroCelula) => {
+    logica[numeroCelula[0]].mini[numeroCelula[1]].estado =
+        !logica[numeroCelula[0]].mini[numeroCelula[1]].estado;
+    logica[numeroCelula[0]].mini[numeroCelula[1]].jugador = player;
     socket.emit("primeraJugada", { numeroCelula: numeroCelula, id: idPartidaActual });
     deshabilitarTodo();
     // Hacé que se muestre el tateti actual
@@ -335,8 +359,9 @@ const primeraJugada = (numeroCelula) => {
     document.getElementById(`tateti${numeroCelula[1]}`).classList.add("actual");
     contadorTurnos.innerText = "Turno de tu oponente";
     const contrincante = player == "x" ? "o" : "x";
-    contadorTurnos.classList.remove("turno" + contrincante);
+    contadorTurnos.classList.remove("turno" + player);
     contadorTurnos.classList.add("turno" + contrincante);
+    sonidos.moveGood.play();
 };
 
 const deshabilitarTodo = () => {
