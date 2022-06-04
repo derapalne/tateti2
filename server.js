@@ -28,7 +28,11 @@ app.get("/local", (req, res) => {
 });
 
 app.get("/online", (req, res) => {
-    res.render("online", { idsActivas: idsActivas });
+    res.render("online", {
+        idsActivas: idsActivas.map((id) => {
+            return id.id;
+        }),
+    });
 });
 
 httpServer.listen(PORT, () => {
@@ -36,11 +40,18 @@ httpServer.listen(PORT, () => {
 });
 
 io.on("connection", (socket) => {
+    renovarIds();
     console.log("nuevo cliente conectado:", socket.id);
     socket.on("idGenerada", (nuevoId) => {
-        idsActivas.push(nuevoId);
-        console.log(idsActivas);
-        io.sockets.emit("nuevaPartida", idsActivas);
+        renovarIds();
+        idsActivas.push({ id: nuevoId, timestamp: Date.now() });
+        // console.log(idsActivas.map((id) => {return id.id}));
+        io.sockets.emit(
+            "nuevaPartida",
+            idsActivas.map((id) => {
+                return id.id;
+            })
+        );
     });
     socket.on("partidaElegida", (data) => {
         io.sockets.emit("partidaRecibida", data);
@@ -48,9 +59,18 @@ io.on("connection", (socket) => {
     socket.on("partidaConfirmada", (data) => {
         console.log(data);
         idsActivas = idsActivas.filter((e) => e.id != data.id);
-        console.log(idsActivas);
+        console.log(
+            idsActivas.map((id) => {
+                return id.id;
+            })
+        );
         io.sockets.emit("partidaConfirmada", data.confirmacion);
-        io.sockets.emit("nuevaPartida", idsActivas);
+        io.sockets.emit(
+            "nuevaPartida",
+            idsActivas.map((id) => {
+                return id.id;
+            })
+        );
     });
     socket.on("partidaIniciada", (id) => {
         io.sockets.emit("partidaIniciada", id);
@@ -65,3 +85,9 @@ io.on("connection", (socket) => {
         io.sockets.emit("victoria", data);
     });
 });
+
+const renovarIds = () => {
+    const timeNow = Date.now();
+    idsActivas = idsActivas.filter((id) => timeNow - id.timestamp <= 120000);
+    console.log(idsActivas);
+};
