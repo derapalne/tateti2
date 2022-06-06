@@ -10,6 +10,9 @@ let nombreContrincante = "";
 let idPartidaActual = "";
 let player = "o";
 
+// ICONO
+const dynamicIcon = document.getElementById("dynamic-icon");
+console.log(dynamicIcon);
 // SUBTITULO
 const texto = document.getElementById("texto");
 // GENERAR PARTIDA (TOP)
@@ -60,9 +63,10 @@ const generarId = () => {
             idExistente = true;
             idPartidaActual = id;
             topPlayer = true;
-            idPartidaGenerada.innerText = `Tu id es: ${id}`;
+            idPartidaGenerada.innerHTML = `Tu id es: <strong>${id}</strong>`;
             esperandoContrincante.classList.remove("invisible");
             divBuscarPartida.classList.add("invisible");
+            divGenerarPartida.classList.add("invisible");
             player = "o";
             console.log("id generada");
         }
@@ -88,14 +92,17 @@ okId.setAttribute("onclick", `elegirPartida()`);
 // BOTTOM
 const elegirPartida = () => {
     if (nombreJugadorInput.value.trim().length > 3) {
+        // lógica
         const elegida = partidasActuales.value;
-        divGenerarPartida.classList.add("invisible");
-        partidaElegida.innerHTML = `Tu partida es: <strong>${elegida}<strong/>`;
         idPartidaActual = elegida;
         nombreJugador = nombreJugadorInput.value.trim();
-        socket.emit("partidaElegida", { id: elegida, nombreJugador: nombreJugador });
         player = "x";
-        console.log("partida elegida");
+        // visuales
+        divGenerarPartida.classList.add("invisible");
+        divBuscarPartida.classList.add("invisible");
+        partidaElegida.innerHTML = `Tu partida es: <strong>${elegida}<strong/>`;
+        // socket
+        socket.emit("partidaElegida", { id: elegida, nombreJugador: nombreJugador });
     } else {
         divPartidaElegida.innerText = "Tu nombre debe tener cuatro caracteres o más";
     }
@@ -146,10 +153,11 @@ socket.on("partidaIniciada", (id) => {
 socket.on("primeraJugada", (data) => {
     if (estaJugando && data.id == idPartidaActual && !topPlayer) {
         iniciarJugada(data.numeroCelula, false);
-        console.log("");
+        // visuales
         contadorTurnos.innerText = "Tu turno";
         contadorTurnos.classList.remove("turnoo");
         contadorTurnos.classList.add("turnox");
+        dynamicIcon.setAttribute("href", "/images/cross.png");
     }
 });
 
@@ -160,6 +168,8 @@ socket.on("jugadaRealizada", (data) => {
         contadorTurnos.innerText = "Tu turno";
         contadorTurnos.classList.remove("turno" + data.jugador);
         contadorTurnos.classList.add("turno" + player);
+        const favIconLink = player == "x" ? "/images/cross.png" : "/images/circle.png";
+        dynamicIcon.setAttribute("href", favIconLink);
     }
 });
 
@@ -170,12 +180,18 @@ socket.on("victoria", (data) => {
         if (data.jugador == player) {
             contadorTurnos.innerText = "Ganaste!";
             document.getElementById(`tateti${data.numeroCelula[0]}`).classList.remove("actual");
+            deshabilitarTodo();
             sonidos.win.play();
         } else {
+            for (let n = 0; n < 3; n++) {
+                document
+                    .getElementById(`tateti${data.jugada[n]}`)
+                    .classList.add(`ganador${data.player}`);
+            }
             contadorTurnos.innerText = "Perdiste!";
             iniciarJugada(data.numeroCelula);
-            deshabilitarTodo();
             document.getElementById(`tateti${data.numeroCelula[0]}`).classList.remove("actual");
+            deshabilitarTodo();
             sonidos.loss.play();
         }
     }
@@ -195,16 +211,16 @@ const mOut = (obj) => {
     obj.setAttribute("src", "/images/blank.png");
 };
 
-const victoria = () => {
-    texto.innerText = `JUGADOR ${player} GANA`;
-    document.getElementsByClassName("actual").item(0).classList.remove("actual");
-    celulas.forEach((mt) => {
-        mt.forEach((c) => {
-            c.removeAttribute("onclick");
-            c.removeAttribute("onmouseover");
-        });
-    });
-};
+// const victoria = () => {
+//     texto.innerText = `JUGADOR ${player} GANA`;
+//     document.getElementsByClassName("actual").item(0).classList.remove("actual");
+//     celulas.forEach((mt) => {
+//         mt.forEach((c) => {
+//             c.removeAttribute("onclick");
+//             c.removeAttribute("onmouseover");
+//         });
+//     });
+// };
 
 // Jugadas ganadoras
 const jg = ["012", "048", "036", "147", "258", "246", "345", "678"];
@@ -225,27 +241,26 @@ const chequear = (tateti) => {
 };
 
 const chequearGlobal = (numeroCelula) => {
-    let victoriaAhora = false;
+    let victoriaGlobal = false;
     jg.forEach((j) => {
         if (
             logica[j[0]].jugador == player &&
             logica[j[1]].jugador == player &&
             logica[j[2]].jugador == player
         ) {
-            victoria();
-            victoriaAhora = true;
+            victoriaGlobal = true;
             for (let n = 0; n < 3; n++) {
                 document.getElementById(`tateti${j[n]}`).classList.add(`ganador${player}`);
             }
-            deshabilitarTodo();
             socket.emit("victoria", {
                 jugador: player,
                 id: idPartidaActual,
                 numeroCelula: numeroCelula,
+                jugada: j,
             });
         }
     });
-    if(!victoriaAhora) {
+    if (!victoriaGlobal) {
         sonidos.pointGood.play();
     }
 };
@@ -275,16 +290,6 @@ const iniciarJugada = (numeroCelula, punto) => {
         sonidos.moveBad.play();
     }
     // Jugada actual
-    if (estaLleno(logica[numeroCelula[1]].mini)) {
-        console.log("lleno");
-        for (let i = 0; i < 8; i++) {
-            if (!estaLleno(logica[i].mini)) {
-                numeroCelula = numeroCelula[0] + i;
-                break;
-            }
-        }
-        console.log(numeroCelula);
-    }
     // Iterar todos los tateties
     for (let i = 0; i < celulas.length; i++) {
         const tatetiActual = document.getElementById(`tateti${i}`);
@@ -319,9 +324,11 @@ const jugada = (numeroCelula) => {
     logica[numeroCelula[0]].mini[numeroCelula[1]].estado =
         !logica[numeroCelula[0]].mini[numeroCelula[1]].estado;
     logica[numeroCelula[0]].mini[numeroCelula[1]].jugador = player;
+    // Confirmar si se marcó un punto
     let punto = false;
+    // Si chequear devuelve verdadero y no se marcó un punto antes en ese casillero
+    // marcá el punto
     if (chequear(logica[numeroCelula[0]].mini) && !logica[numeroCelula[0]].estado) {
-        console.log(logica[numeroCelula[0]]);
         logica[numeroCelula[0]].jugador = player;
         logica[numeroCelula[0]].estado = true;
         punto = true;
@@ -330,21 +337,34 @@ const jugada = (numeroCelula) => {
     } else {
         sonidos.moveGood.play();
     }
+    // Visuales
+    deshabilitarTodo();
+    // Hacé que no se muestre el tateti viejo
+    document.getElementById(`tateti${numeroCelula[0]}`).classList.remove("actual");
+    // y que se muestre el tateti actual pero fijate que no esté lleno
+    if (estaLleno(logica[numeroCelula[1]].mini)) {
+        for (let i = 0; i < 8; i++) {
+            if (!estaLleno(logica[i].mini)) {
+                numeroCelula = numeroCelula[0] + i;
+                break;
+            }
+        }
+    }
+    document.getElementById(`tateti${numeroCelula[1]}`).classList.add("actual");
+    contadorTurnos.innerText = "Turno de tu oponente";
+    const contrincante = player == "x" ? "o" : "x";
+    contadorTurnos.classList.remove("turno" + player);
+    contadorTurnos.classList.add("turno" + contrincante);
+    const favIconLink = contrincante == "x" ? "/images/cross.png" : "/images/circle.png";
+    dynamicIcon.setAttribute("href", favIconLink);
+
+    // Socket
     socket.emit("jugadaRealizada", {
         numeroCelula: numeroCelula,
         id: idPartidaActual,
         jugador: player,
         punto: punto,
     });
-    deshabilitarTodo();
-    // Hacé que se muestre el tateti actual
-    document.getElementById(`tateti${numeroCelula[0]}`).classList.remove("actual");
-    // y que no se muestre el viejo
-    document.getElementById(`tateti${numeroCelula[1]}`).classList.add("actual");
-    contadorTurnos.innerText = "Turno de tu oponente";
-    const contrincante = player == "x" ? "o" : "x";
-    contadorTurnos.classList.remove("turno" + player);
-    contadorTurnos.classList.add("turno" + contrincante);
 };
 
 const primeraJugada = (numeroCelula) => {
@@ -361,6 +381,8 @@ const primeraJugada = (numeroCelula) => {
     const contrincante = player == "x" ? "o" : "x";
     contadorTurnos.classList.remove("turno" + player);
     contadorTurnos.classList.add("turno" + contrincante);
+    const favIconLink = contrincante == "x" ? "/images/cross.png" : "/images/circle.png";
+    dynamicIcon.setAttribute("href", favIconLink);
     sonidos.moveGood.play();
 };
 

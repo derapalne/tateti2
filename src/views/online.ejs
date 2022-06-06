@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" type="image/x-icon" href="/images/circle.png" />
+  <link id="dynamic-icon" rel="shortcut icon" type="image/x-icon" href="/images/circle.png" />
   <script src="/socket.io/socket.io.js"></script>
   <link href="/styles/index.css" rel="stylesheet">
   <title>TaTeTi²</title>
@@ -22,9 +22,9 @@
             <p>Si querés comenzar una nueva partida poné tu nombre:</p>
             <input type="text" id="idPartidaNombre" placeholder="Tu nombre acá" />
             <button id="generate">Generar partida</button>
-            <small id="idPartidaGenerada"></small><br />
-            <small id="esperandoContrincante" class="invisible">Esperando contrincante...</small>
         </div>
+        <small id="idPartidaGenerada"></small><br />
+        <small id="esperandoContrincante" class="invisible">Esperando contrincante...</small>
         <div id="divBuscarPartida">
             <p>O si ya generaron una y querés sumarte: </p>
             <select id="partidasActuales">
